@@ -19,7 +19,7 @@ public class MyUtils {
 	//	初始化scanner对象，指向输入文件
 	public static void fileread(String filename)throws Exception{
 		file = new File(filename);
-		scanner = new Scanner(file);     
+		scanner = new Scanner(file,"gbk");     
 	}
 	
 	//  截取-n参数后面的数字，如果没有-n参数，返回-1

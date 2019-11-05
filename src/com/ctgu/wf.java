@@ -3,6 +3,7 @@ package com.ctgu;
 
 public class wf {
 	public static void main(String[] args) throws Exception {
+		long start = System.currentTimeMillis();
 		char parameter;
 		int i=0;
 		String filename = args[args.length-1];
@@ -33,6 +34,10 @@ public class wf {
 			}
 		}
 		else {System.out.println("参数异常");}
+		long end = System.currentTimeMillis();
+		System.out.println("-------------------------");
+		System.out.println("程序运行时间："+(end-start)+"ms");
+		System.out.println("-------------------------");
 	}
 
 }
