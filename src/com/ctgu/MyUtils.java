@@ -21,11 +21,6 @@ public class MyUtils {
 		file = new File(filename);
 		scanner = new Scanner(file);     
 	}
-
-	//  关闭文件
-	public static void closefile()throws Exception {
-		scanner.close();
-	}
 	
 	//  截取-n参数后面的数字，如果没有-n参数，返回-1
 	public static int isNumber(String s) {
@@ -36,22 +31,6 @@ public class MyUtils {
 			return num;
 		}
 		return -1;
-	}
-	
-//  -d排序
-	public static ArrayList<Map.Entry<String,Integer>> sort(ArrayList<Map.Entry<String,Integer>> list){
-		Collections.sort(list,new Comparator<Map.Entry<String, Integer>>(){
-			
-			public int compare(Entry<String, Integer> o1, Entry<String, Integer> o2) {
-				// TODO Auto-generated method stub
-				if(o2.getValue()==o1.getValue()) {
-					return o1.getKey().compareTo(o2.getKey());
-				}
-				else return o2.getValue()-o1.getValue();
-			}
-				
-		});
-		return list;
 	}
 	
 	//  对应参数-c，显示字母频率
@@ -88,13 +67,9 @@ public class MyUtils {
 		}
 		
 		//排序
-		Collections.sort(letter, new Comparator<Alpha>() {
-		    public int compare(Alpha o1, Alpha o2) {
-		        return (o2.count - o1.count);
-		    }
-		});
+		Collections.sort(letter,(Alpha o1,Alpha o2) -> o2.count-o1.count );
 		
-		//迭代输出
+		//输出
 		System.out.println("文件："+filename);
 		Iterator<Alpha> iterator = letter.iterator();
 		while(iterator.hasNext()) {
@@ -102,33 +77,30 @@ public class MyUtils {
 			System.out.printf("%c出现次数：%d  频率:%.2f%c",test.c,test.count,test.f,'%');
 			System.out.println();
 		}
-		closefile();
+		scanner.close();
 	}
 	
 	//  对应参数-f，显示单词数量，并排序输出
 	public static void showwordc(String filename,int num) throws Exception {
+		
 		fileread(filename);
 		HashMap<String, Integer > hashMap=new HashMap<String,Integer>();
-		while(scanner.hasNextLine())
-		{
+		while(scanner.hasNextLine()){
 			String line=scanner.nextLine();
 			String[] lineWords=line.split("\\W+");//用非单词符来做分割，分割出来的就是一个个单词
-			
 			Set<String> wordSet=hashMap.keySet();
-			for(int i=0;i<lineWords.length;i++)
-			{
+			
+			for(int i=0;i<lineWords.length;i++){
 				String str = lineWords[i].toLowerCase();
 				char c;
 				try {c = str.charAt(0);} catch(Exception e) {c = '0';}
-				if(c>='a'&&c<='z'&&(lineWords[i].toLowerCase().matches("[\\d\\p{Lower}]+"))) {
-					if(wordSet.contains(str))
-					{
+				if(c>='a'&&c<='z'&&(str.matches("[\\d\\p{Lower}]+"))) {
+					if(wordSet.contains(str)){
 						Integer number=hashMap.get(str);
 						number++;
 						hashMap.put(str, number);
 					}
-					else 
-					{
+					else {
 						hashMap.put(str, 1);
 					}
 				}
@@ -137,7 +109,12 @@ public class MyUtils {
 		//排序
 		Set<Map.Entry<String, Integer>> entrymap = hashMap.entrySet();
 		ArrayList<Map.Entry<String,Integer>> list = new ArrayList<Map.Entry<String,Integer>>(entrymap);	
-		list = sort(list);
+		Collections.sort(list,(Entry<String, Integer> o1, Entry<String, Integer> o2) -> {
+			if(o2.getValue()==o1.getValue()) {
+				return o1.getKey().compareTo(o2.getKey());
+			}
+			else return o2.getValue()-o1.getValue();
+		});
 		//输出
 		System.out.println("文件："+filename);
 		Iterator<Map.Entry<String,Integer>> iterator = list.iterator();
@@ -146,7 +123,7 @@ public class MyUtils {
 			System.out.println(test.getKey()+":"+test.getValue());
 			if(num!=-1) num--;
 		}
-		closefile();
+		scanner.close();
 	}
 	
 	//  对应参数-d，对当前目录文件执行-f操作
@@ -177,7 +154,7 @@ public class MyUtils {
 	public static void stopwords(String filename,String stopfile)throws Exception{
 		File stop = new File(stopfile);
 		Scanner stopscanner = new Scanner(stop);
-		Set<String> stopwords = new HashSet<String>() ;
+		Set<String> stopwords = new HashSet<String>() ; //将要跳过的单词保存在stopwords集合中
 		fileread(filename);
 		while(stopscanner.hasNextLine())
 		{
@@ -190,27 +167,25 @@ public class MyUtils {
 			}
 		}
 		HashMap<String, Integer > hashMap=new HashMap<String,Integer>();
-		while(scanner.hasNextLine())
-		{
+		while(scanner.hasNextLine()){
 			String line=scanner.nextLine();
-			String[] lineWords=line.split("\\W+");//用非单词符来做分割，分割出来的就是一个个单词
+			String[] lineWords=line.split("\\W+");
 			
 			Set<String> wordSet=hashMap.keySet();
-			for(int i=0;i<lineWords.length;i++)
-			{
+			for(int i=0;i<lineWords.length;i++){
 				String str = lineWords[i].toLowerCase();
 				char c;
 				try {c = str.charAt(0);} catch(Exception e) {c = '0';}
 				if(c>='a'&&c<='z'&&(lineWords[i].toLowerCase().matches("[\\d\\p{Lower}]+"))) {
-					if(wordSet.contains(str))
-					{
-						Integer number=hashMap.get(str);
-						number++;
-						hashMap.put(str, number);
-					}
-					else 
-					{
-						hashMap.put(str, 1);
+					if(!stopwords.contains(str)) {
+						if(wordSet.contains(str)){
+							Integer number=hashMap.get(str);
+							number++;
+							hashMap.put(str, number);
+						}
+						else {
+							hashMap.put(str, 1);
+						}
 					}
 				}
 			}
@@ -218,20 +193,22 @@ public class MyUtils {
 		//排序
 		Set<Map.Entry<String, Integer>> entrymap = hashMap.entrySet();
 		ArrayList<Map.Entry<String,Integer>> list = new ArrayList<Map.Entry<String,Integer>>(entrymap);	
-		list = sort(list);
+		Collections.sort(list,(Entry<String, Integer> o1, Entry<String, Integer> o2) -> {
+			if(o2.getValue()==o1.getValue()) {
+				return o1.getKey().compareTo(o2.getKey());
+			}
+			else return o2.getValue()-o1.getValue();
+		});
 		
 		//输出
 		Iterator<Map.Entry<String,Integer>> iterator = list.iterator();
 		while(iterator.hasNext()){
 			Map.Entry<String, Integer> test = iterator.next();
-			if(!stopwords.contains(test.getKey()))
-				System.out.println(test.getKey()+":"+test.getValue());
+			System.out.println(test.getKey()+":"+test.getValue());
 		}
 	
 		stopscanner.close();
-		closefile();
+		scanner.close();
 	}
 	
-	
-
 }
