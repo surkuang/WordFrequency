@@ -8,7 +8,6 @@ public class wf {
 		int i=0;
 		String filename = args[args.length-1];
 		parameter = args[i].charAt(1);
-		
 		if(args[0].charAt(0)=='-') {
 			switch(parameter) {
 			case 'c': MyUtils.showletterf(filename);
